@@ -52,6 +52,7 @@ type InitialSettings = {
 const KM_TO_MI = 0.621371;
 const MI_TO_KM = 1.60934;
 const BASE_MARKS_KMH = [30, 50, 80, 100, 120, 132, 150, 160, 200, 250, 300];
+const PER_HOUR_REFERENCE_KMH = 120;
 const REPOSITORY_URL = 'https://github.com/POLYTROPO-ES/fastenough';
 
 const languageOptions: Array<{ value: Locale; label: string }> = [
@@ -464,6 +465,7 @@ function App() {
   const baselineTravelTimeHours = speedLimitActive && speedLimitKmh > 0 ? distanceKm / speedLimitKmh : 0;
   const currentDiffHours = speedLimitActive ? currentTravelTimeHours - baselineTravelTimeHours : 0;
   const perHourDiffHours = speedLimitActive && speedKmh > 0 ? speedLimitKmh / speedKmh - 1 : 0;
+  const fixedPerHourDiffHours = speedKmh > 0 ? 1 - speedKmh / PER_HOUR_REFERENCE_KMH : 0;
 
   const displayMarks = useMemo(() => createDisplayMarks(distanceUnit, maxSpeed), [distanceUnit, maxSpeed]);
 
@@ -958,14 +960,17 @@ function App() {
           <line x1="300" y1="300" x2={needleTip.x} y2={needleTip.y} className="needle" />
           <circle cx="300" cy="300" r="13" className="needle-center" />
 
-          <text x="300" y="284" textAnchor="middle" className="speed-value" data-testid="speed-value">
-            {Math.round(speed)}
+          <text x="300" y="412" textAnchor="middle" className="speed-kmh">
+            {Math.round(speed)} {unitSuffix(distanceUnit)}
           </text>
-          <text x="300" y="308" textAnchor="middle" className="speed-unit">
-            {unitSuffix(distanceUnit)}
-          </text>
-          <text x="300" y="329" textAnchor="middle" className="speed-kmh">
-            {Math.round(speedKmh)} km/h
+          <text
+            x="300"
+            y="434"
+            textAnchor="middle"
+            className={`speed-per-hour ${fixedPerHourDiffHours < 0 ? 'positive' : ''} ${fixedPerHourDiffHours > 0 ? 'negative' : ''}`}
+            data-testid="inner-per-hour"
+          >
+            {signedDuration(fixedPerHourDiffHours)} /h
           </text>
 
           {overlays.map((entry) => (

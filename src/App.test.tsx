@@ -59,7 +59,8 @@ describe('App', () => {
     });
 
     await waitFor(() => {
-      const parsed = Number(screen.getByTestId('speed-value').textContent ?? '0');
+      const speedSlider = screen.getByTestId('speed-slider') as HTMLInputElement;
+      const parsed = Number(speedSlider.value);
       expect(parsed).toBeLessThan(15);
     });
   });

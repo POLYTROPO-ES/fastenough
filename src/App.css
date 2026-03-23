@@ -410,6 +410,20 @@
   font-size: 14px;
 }
 
+.speedometer .speed-per-hour {
+  fill: #c6d8ea;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.speedometer .speed-per-hour.positive {
+  fill: #7dffb0;
+}
+
+.speedometer .speed-per-hour.negative {
+  fill: #ff7b7b;
+}
+
 .overlay-speed-label {
   fill: #e9f5ff;
   font-size: 11px;
