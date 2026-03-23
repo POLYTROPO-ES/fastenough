@@ -429,7 +429,7 @@ function App() {
   const ringArc = useMemo(() => {
     const span = dialSpan(maxSpeed);
     const ratio = span / 360;
-    const specs = [238, 254, 270];
+    const specs = [226, 256, 286];
     return specs.map((radius) => {
       const circumference = 2 * Math.PI * radius;
       return {
@@ -451,13 +451,13 @@ function App() {
 
   const limitMarkOuter = useMemo(() => {
     const angle = angleForSpeed(speedLimit, maxSpeed);
-    return pointOnArc(300, 300, 252, angle);
-  }, [speedLimit, maxSpeed]);
+    return pointOnArc(300, 300, ringArc[1].radius + 4, angle);
+  }, [speedLimit, maxSpeed, ringArc]);
 
   const limitMarkInner = useMemo(() => {
     const angle = angleForSpeed(speedLimit, maxSpeed);
-    return pointOnArc(300, 300, 224, angle);
-  }, [speedLimit, maxSpeed]);
+    return pointOnArc(300, 300, ringArc[1].radius - 24, angle);
+  }, [speedLimit, maxSpeed, ringArc]);
 
   const limitRingMarker = useMemo(() => {
     const angle = angleForSpeed(speedLimit, maxSpeed);
@@ -618,15 +618,17 @@ function App() {
         <div className="speedo-stack">
           <label className="distance-vertical" aria-label={t.distanceLabel}>
             <span>{t.distanceLabel}</span>
-            <input
-              type="range"
-              min={10}
-              max={1000}
-              step={10}
-              value={distance}
-              onChange={(event) => setDistance(clamp(Number(event.target.value), 10, 1000))}
-              data-testid="distance-slider"
-            />
+            <div className="distance-vertical-track">
+              <input
+                type="range"
+                min={10}
+                max={1000}
+                step={10}
+                value={distance}
+                onChange={(event) => setDistance(clamp(Number(event.target.value), 10, 1000))}
+                data-testid="distance-slider"
+              />
+            </div>
             <strong>
               {distance} {distanceSuffix(distanceUnit)}
             </strong>
@@ -716,7 +718,7 @@ function App() {
             r={ringArc[1].radius}
             fill="none"
             stroke="transparent"
-            strokeWidth="24"
+            strokeWidth="34"
             onPointerDown={(event) => startRingDrag(event, 'limit')}
             onPointerMove={(event) => continueRingDrag(event, 'limit')}
             onPointerUp={stopRingDrag}
@@ -730,7 +732,7 @@ function App() {
             r={ringArc[2].radius}
             fill="none"
             stroke="transparent"
-            strokeWidth="24"
+            strokeWidth="34"
             onPointerDown={(event) => startRingDrag(event, 'current')}
             onPointerMove={(event) => continueRingDrag(event, 'current')}
             onPointerUp={stopRingDrag}
