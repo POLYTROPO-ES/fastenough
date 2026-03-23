@@ -27,6 +27,8 @@ type Translations = {
   ringLegendScale: string;
   ringLegendLimit: string;
   ringLegendCurrent: string;
+  ringLegendTapLimit: string;
+  ringLegendTapCurrent: string;
   summaryLabel: string;
   baselineOff: string;
   timeSaved: string;
@@ -64,6 +66,8 @@ const translations: Record<Locale, Translations> = {
     ringLegendScale: 'Speed scale arc',
     ringLegendLimit: 'Limit ring',
     ringLegendCurrent: 'Current speed ring',
+    ringLegendTapLimit: 'Tap orange ring to set limit',
+    ringLegendTapCurrent: 'Tap blue ring to set speed',
     summaryLabel: 'Quick summary',
     baselineOff: 'Off',
     timeSaved: 'Time saved',
@@ -84,6 +88,8 @@ const translations: Record<Locale, Translations> = {
     ringLegendScale: 'Arco de escala',
     ringLegendLimit: 'Anillo limite',
     ringLegendCurrent: 'Anillo velocidad actual',
+    ringLegendTapLimit: 'Toca anillo naranja para limite',
+    ringLegendTapCurrent: 'Toca anillo azul para velocidad',
     summaryLabel: 'Resumen rapido',
     baselineOff: 'Apagado',
     timeSaved: 'Tiempo ganado',
@@ -104,6 +110,8 @@ const translations: Record<Locale, Translations> = {
     ringLegendScale: 'Speed scale arc',
     ringLegendLimit: 'Limit ring',
     ringLegendCurrent: 'Current speed ring',
+    ringLegendTapLimit: 'Tap orange ring to set limit',
+    ringLegendTapCurrent: 'Tap blue ring to set speed',
     summaryLabel: 'Quick summary',
     baselineOff: 'Off',
     timeSaved: 'Time saved',
@@ -124,6 +132,8 @@ const translations: Record<Locale, Translations> = {
     ringLegendScale: 'Speed scale arc',
     ringLegendLimit: 'Limit ring',
     ringLegendCurrent: 'Current speed ring',
+    ringLegendTapLimit: 'Tap orange ring to set limit',
+    ringLegendTapCurrent: 'Tap blue ring to set speed',
     summaryLabel: 'Quick summary',
     baselineOff: 'Off',
     timeSaved: 'Time saved',
@@ -144,6 +154,8 @@ const translations: Record<Locale, Translations> = {
     ringLegendScale: 'Speed scale arc',
     ringLegendLimit: 'Limit ring',
     ringLegendCurrent: 'Current speed ring',
+    ringLegendTapLimit: 'Tap orange ring to set limit',
+    ringLegendTapCurrent: 'Tap blue ring to set speed',
     summaryLabel: 'Quick summary',
     baselineOff: 'Off',
     timeSaved: 'Time saved',
@@ -164,6 +176,8 @@ const translations: Record<Locale, Translations> = {
     ringLegendScale: 'Speed scale arc',
     ringLegendLimit: 'Limit ring',
     ringLegendCurrent: 'Current speed ring',
+    ringLegendTapLimit: 'Tap orange ring to set limit',
+    ringLegendTapCurrent: 'Tap blue ring to set speed',
     summaryLabel: 'Quick summary',
     baselineOff: 'Off',
     timeSaved: 'Time saved',
@@ -184,6 +198,8 @@ const translations: Record<Locale, Translations> = {
     ringLegendScale: 'Speed scale arc',
     ringLegendLimit: 'Limit ring',
     ringLegendCurrent: 'Current speed ring',
+    ringLegendTapLimit: 'Tap orange ring to set limit',
+    ringLegendTapCurrent: 'Tap blue ring to set speed',
     summaryLabel: 'Quick summary',
     baselineOff: 'Off',
     timeSaved: 'Time saved',
@@ -204,6 +220,8 @@ const translations: Record<Locale, Translations> = {
     ringLegendScale: 'Speed scale arc',
     ringLegendLimit: 'Limit ring',
     ringLegendCurrent: 'Current speed ring',
+    ringLegendTapLimit: 'Tap orange ring to set limit',
+    ringLegendTapCurrent: 'Tap blue ring to set speed',
     summaryLabel: 'Quick summary',
     baselineOff: 'Off',
     timeSaved: 'Time saved',
@@ -350,6 +368,7 @@ function createDisplayMarks(unit: DistanceUnit, maxSpeedUnit: number): Array<{ s
 }
 
 function App() {
+  const [dragTarget, setDragTarget] = useState<'current' | 'limit' | null>(null);
   const [locale, setLocale] = useState<Locale>('en');
   const [distanceUnit, setDistanceUnit] = useState<DistanceUnit>('km');
   const [distance, setDistance] = useState(100);
@@ -497,6 +516,42 @@ function App() {
     setSpeedLimit(value);
   }
 
+  function startRingDrag(
+    event: PointerEvent<SVGCircleElement>,
+    target: 'current' | 'limit',
+  ) {
+    setDragTarget(target);
+    if (typeof event.currentTarget.setPointerCapture === 'function') {
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        // Ignore capture errors on environments that do not fully support pointer capture.
+      }
+    }
+    handleRingSelection(event, target);
+  }
+
+  function continueRingDrag(
+    event: PointerEvent<SVGCircleElement>,
+    target: 'current' | 'limit',
+  ) {
+    if (dragTarget !== target) {
+      return;
+    }
+    handleRingSelection(event, target);
+  }
+
+  function stopRingDrag(event: PointerEvent<SVGCircleElement>) {
+    if (typeof event.currentTarget.releasePointerCapture === 'function') {
+      try {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      } catch {
+        // Ignore release errors for unsupported environments.
+      }
+    }
+    setDragTarget(null);
+  }
+
   return (
     <main className="dashboard">
       <header className="topbar">
@@ -555,6 +610,8 @@ function App() {
               <span className="legend-swatch legend-current" />
               {t.ringLegendCurrent}
             </li>
+            <li className="legend-note">{t.ringLegendTapLimit}</li>
+            <li className="legend-note">{t.ringLegendTapCurrent}</li>
           </ul>
         </aside>
 
@@ -660,8 +717,11 @@ function App() {
             fill="none"
             stroke="transparent"
             strokeWidth="24"
-            onPointerDown={(event) => handleRingSelection(event, 'limit')}
-            className="ring-click-target"
+            onPointerDown={(event) => startRingDrag(event, 'limit')}
+            onPointerMove={(event) => continueRingDrag(event, 'limit')}
+            onPointerUp={stopRingDrag}
+            onPointerCancel={stopRingDrag}
+            className={`ring-click-target ${dragTarget === 'limit' ? 'dragging' : ''}`}
             data-testid="ring-limit"
           />
           <circle
@@ -671,8 +731,11 @@ function App() {
             fill="none"
             stroke="transparent"
             strokeWidth="24"
-            onPointerDown={(event) => handleRingSelection(event, 'current')}
-            className="ring-click-target"
+            onPointerDown={(event) => startRingDrag(event, 'current')}
+            onPointerMove={(event) => continueRingDrag(event, 'current')}
+            onPointerUp={stopRingDrag}
+            onPointerCancel={stopRingDrag}
+            className={`ring-click-target ${dragTarget === 'current' ? 'dragging' : ''}`}
             data-testid="ring-current"
           />
 
@@ -681,9 +744,6 @@ function App() {
           <circle cx={limitRingMarker.x} cy={limitRingMarker.y} r="9" className="limit-sign-outer" />
           <circle cx={limitRingMarker.x} cy={limitRingMarker.y} r="5.2" className="limit-sign-inner" />
           <circle cx={currentRingMarker.x} cy={currentRingMarker.y} r="7" className="ring-marker current" />
-
-          <text x="448" y="74" className="ring-cue limit">Tap orange ring: limit</text>
-          <text x="448" y="92" className="ring-cue current">Tap blue ring: speed</text>
 
           {Array.from({ length: Math.floor(maxSpeed / 10) + 1 }, (_, index) => index * 10).map((value) => {
             const angle = angleForSpeed(value, maxSpeed);

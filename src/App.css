@@ -79,16 +79,15 @@
 }
 
 .speedo-stack {
-  position: relative;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.35rem;
 }
 
 .distance-vertical {
-  position: absolute;
-  left: 1.05rem;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 3;
-  width: 42px;
+  width: 64px;
+  min-height: 260px;
   display: grid;
   justify-items: center;
   gap: 0.35rem;
@@ -110,7 +109,7 @@
 }
 
 .distance-vertical input[type='range'] {
-  width: 200px;
+  width: 190px;
   height: 20px;
   transform: rotate(-90deg);
   accent-color: #7ad5ff;
@@ -152,6 +151,14 @@
   gap: 0.4rem;
   font-size: 0.72rem;
   color: #c4d8ec;
+}
+
+.ring-legend .legend-note {
+  display: block;
+  font-size: 0.66rem;
+  color: #9db6cd;
+  line-height: 1.25;
+  padding-left: 0.1rem;
 }
 
 .legend-swatch {
@@ -210,6 +217,10 @@
   cursor: pointer;
 }
 
+.ring-click-target.dragging {
+  cursor: grabbing;
+}
+
 .ring-helper {
   pointer-events: none;
 }
@@ -248,20 +259,6 @@
   filter: drop-shadow(0 0 7px rgba(88, 213, 255, 0.95));
 }
 
-.ring-cue {
-  font-size: 12px;
-  letter-spacing: 0.03em;
-  pointer-events: none;
-}
-
-.ring-cue.limit {
-  fill: #ff9b8f;
-}
-
-.ring-cue.current {
-  fill: #9cdfff;
-}
-
 .speedometer .speed-value {
   fill: #f3f9ff;
   font-size: 50px;
@@ -287,7 +284,7 @@
 
 .overlay-time {
   fill: #c8d9e9;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -363,7 +360,7 @@
   }
 
   .overlay-time {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .ring-legend {
@@ -378,8 +375,8 @@
   }
 
   .distance-vertical {
-    left: 0.5rem;
-    width: 34px;
+    width: 50px;
+    min-height: 210px;
   }
 
   .distance-vertical span {
@@ -390,8 +387,8 @@
     width: 150px;
   }
 
-  .ring-cue {
-    font-size: 10px;
+  .ring-legend .legend-note {
+    font-size: 0.62rem;
   }
 }
 
