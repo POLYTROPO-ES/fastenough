@@ -872,6 +872,11 @@
   .speedometer {
     height: min(56vh, 100%);
     max-height: min(56vh, 420px);
+    margin-top: -0.2rem;
+  }
+
+  .speedo-stack {
+    align-items: start;
   }
 
   .ring-legend .legend-note {
