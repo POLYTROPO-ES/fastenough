@@ -52,6 +52,7 @@ type InitialSettings = {
 const KM_TO_MI = 0.621371;
 const MI_TO_KM = 1.60934;
 const BASE_MARKS_KMH = [30, 50, 80, 100, 120, 132, 150, 160, 200, 250, 300];
+const REPOSITORY_URL = 'https://github.com/POLYTROPO-ES/fastenough';
 
 const languageOptions: Array<{ value: Locale; label: string }> = [
   { value: 'en', label: 'English' },
@@ -462,6 +463,7 @@ function App() {
   const currentTravelTimeHours = speedKmh > 0 ? distanceKm / speedKmh : Number.POSITIVE_INFINITY;
   const baselineTravelTimeHours = speedLimitActive && speedLimitKmh > 0 ? distanceKm / speedLimitKmh : 0;
   const currentDiffHours = speedLimitActive ? currentTravelTimeHours - baselineTravelTimeHours : 0;
+  const perHourDiffHours = speedLimitActive && speedKmh > 0 ? speedLimitKmh / speedKmh - 1 : 0;
 
   const displayMarks = useMemo(() => createDisplayMarks(distanceUnit, maxSpeed), [distanceUnit, maxSpeed]);
 
@@ -549,6 +551,13 @@ function App() {
     !speedLimitActive || Math.abs(currentDiffHours) < 0.0001
       ? t.noDifference
       : currentDiffHours < 0
+        ? t.timeSaved
+        : t.timeLost;
+
+  const perHourState =
+    !speedLimitActive || Math.abs(perHourDiffHours) < 0.0001
+      ? t.noDifference
+      : perHourDiffHours < 0
         ? t.timeSaved
         : t.timeLost;
 
@@ -664,18 +673,63 @@ function App() {
             </select>
           </label>
 
-          <label>
-            {t.unitLabel}
-            <select value={distanceUnit} onChange={(event) => handleUnitChange(event.target.value as DistanceUnit)}>
-              <option value="km">Kilometers (km/h)</option>
-              <option value="mi">Miles (mph)</option>
-            </select>
-          </label>
+          <div className="unit-toggle" role="group" aria-label={t.unitLabel}>
+            <span className="unit-toggle-label">{t.unitLabel}</span>
+            <div className="unit-toggle-buttons" data-testid="unit-toggle">
+              <button
+                type="button"
+                className={`unit-toggle-btn ${distanceUnit === 'km' ? 'active' : ''}`}
+                onClick={() => handleUnitChange('km')}
+                aria-pressed={distanceUnit === 'km'}
+                aria-label="Kilometers per hour"
+              >
+                <span className="unit-icon" aria-hidden="true">KM</span>
+                <span>km/h</span>
+              </button>
+              <button
+                type="button"
+                className={`unit-toggle-btn ${distanceUnit === 'mi' ? 'active' : ''}`}
+                onClick={() => handleUnitChange('mi')}
+                aria-pressed={distanceUnit === 'mi'}
+                aria-label="Miles per hour"
+              >
+                <span className="unit-icon" aria-hidden="true">MI</span>
+                <span>mph</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <button type="button" className="share-action" onClick={shareCurrentSettings} data-testid="share-settings-btn">
-          {t.shareSettings}
-        </button>
+        <div className="topbar-actions">
+          <button type="button" className="share-action" onClick={shareCurrentSettings} data-testid="share-settings-btn">
+            {t.shareSettings}
+          </button>
+
+          <details className="help-popover">
+            <summary className="help-trigger" aria-label="Help">
+              ?
+            </summary>
+            <div className="help-panel">
+              <h2>How Fast enough Works</h2>
+              <p>
+                Fast enough compares travel time between your current speed and an optional speed limit over the
+                selected trip distance. It visualizes the impact both in the center summary and around the speedometer
+                overlay marks.
+              </p>
+              <ul>
+                <li>Current speed: blue ring and center needle.</li>
+                <li>Speed limit: orange ring and red limit sign marker.</li>
+                <li>Trip distance: vertical slider from 10 to 1000.</li>
+                <li>Overlay labels: time gained or lost versus the configured limit at each mark.</li>
+                <li>Quick summary: total trip difference plus gain/loss per hour at your current setting.</li>
+                <li>Share setting: copies a URL with d, s, and l query parameters for exact state restore.</li>
+              </ul>
+              <p>
+                Repository: <a href={REPOSITORY_URL} target="_blank" rel="noreferrer">{REPOSITORY_URL}</a>
+              </p>
+            </div>
+          </details>
+        </div>
       </header>
 
       <section className="top-controls" aria-label="primary controls">
@@ -943,6 +997,9 @@ function App() {
             {signedDuration(currentDiffHours)}
           </p>
           <p className="delta-state" data-testid="time-saved-state">{currentState}</p>
+          <p className="small-line" data-testid="time-per-hour">
+            {t.timeSaved}/{t.timeLost} per hour: <strong>{signedDuration(perHourDiffHours)}</strong> ({perHourState})
+          </p>
           <p className="small-line">{t.currentTravelTime}: <strong>{formatDuration(currentTravelTimeHours)}</strong></p>
           <p className="small-line">
             {speedLimitActive ? t.baselineTravelTime : t.baselineNote}:{' '}
