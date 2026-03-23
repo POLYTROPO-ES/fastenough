@@ -1143,13 +1143,24 @@ function App() {
 
         <section className="result-card summary-floating" aria-live="polite">
           <p className="label">{t.summaryLabel}</p>
-          <p className={`delta ${currentDiffHours < 0 ? 'positive' : ''} ${currentDiffHours > 0 ? 'negative' : ''}`} data-testid="time-saved-value">
-            {signedDuration(currentDiffHours)}
-          </p>
-          <p className="delta-state" data-testid="time-saved-state">{currentState}</p>
-          <p className="small-line" data-testid="time-per-hour">
-            {t.timeSaved}/{t.timeLost} per hour: <strong>{signedDuration(perHourDiffHours)}</strong> ({perHourState})
-          </p>
+          <div className="summary-grid">
+            <div className="summary-col">
+              <p className="summary-col-title">Total</p>
+              <p className={`delta ${currentDiffHours < 0 ? 'positive' : ''} ${currentDiffHours > 0 ? 'negative' : ''}`} data-testid="time-saved-value">
+                {signedDuration(currentDiffHours)}
+              </p>
+              <p className="delta-state" data-testid="time-saved-state">{currentState}</p>
+            </div>
+
+            <div className="summary-col">
+              <p className="summary-col-title">Per hour</p>
+              <p className={`delta ${perHourDiffHours < 0 ? 'positive' : ''} ${perHourDiffHours > 0 ? 'negative' : ''}`} data-testid="time-per-hour">
+                {signedDuration(perHourDiffHours)}
+              </p>
+              <p className="delta-state">{perHourState}</p>
+            </div>
+          </div>
+
           <p className="small-line">{t.currentTravelTime}: <strong>{formatDuration(currentTravelTimeHours)}</strong></p>
           <p className="small-line">
             {speedLimitActive ? t.baselineTravelTime : t.baselineNote}:{' '}

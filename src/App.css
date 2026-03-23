@@ -529,7 +529,7 @@
 
 .speedometer .speed-per-hour {
   fill: #c6d8ea;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -551,10 +551,10 @@
 
 .overlay-time {
   fill: #f5fbff;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   stroke: rgba(3, 12, 20, 0.96);
-  stroke-width: 2.3px;
+  stroke-width: 3px;
   paint-order: stroke fill;
   pointer-events: none;
 }
@@ -695,6 +695,25 @@
   letter-spacing: 0.11em;
   color: #a7bbcf;
   font-size: 0.64rem;
+}
+
+.summary-grid {
+  margin-top: 0.12rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.34rem;
+}
+
+.summary-col {
+  min-width: 0;
+}
+
+.summary-col-title {
+  margin: 0;
+  color: #a7bbcf;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .delta {
@@ -848,7 +867,8 @@
   }
 
   .overlay-time {
-    font-size: 11px;
+    font-size: 17px;
+    stroke-width: 3.2px;
   }
 
   .ring-legend {
@@ -886,13 +906,17 @@
   }
 
   .delta {
-    font-size: clamp(0.84rem, 3.3vw, 1rem);
-    margin-top: 0.08rem;
+    font-size: clamp(0.95rem, 3.9vw, 1.18rem);
+    margin-top: 0.06rem;
   }
 
   .delta-state {
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     margin: 0;
+  }
+
+  .summary-col-title {
+    font-size: 0.57rem;
   }
 
   .small-line {
@@ -905,6 +929,22 @@
     height: min(56vh, 100%);
     max-height: min(56vh, 420px);
     margin-top: -0.2rem;
+  }
+
+  .speedometer .speed-per-hour {
+    font-size: 24px;
+    font-weight: 900;
+    stroke-width: 2.6px;
+  }
+
+  .speedometer .speed-kmh {
+    font-size: 18px;
+  }
+
+  .small-line[data-testid='time-per-hour'] {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #cfe5fb;
   }
 
   .speedo-stack {
