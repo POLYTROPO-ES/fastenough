@@ -1,0 +1,30 @@
+:root {
+  font-family: 'Bahnschrift', 'Rajdhani', 'Trebuchet MS', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #ebf5ff;
+  background: #05080d;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  color: inherit;
+  background:
+    radial-gradient(circle at 16% -20%, rgba(71, 144, 212, 0.24), transparent 42%),
+    radial-gradient(circle at 90% 110%, rgba(255, 90, 55, 0.22), transparent 35%),
+    linear-gradient(180deg, #090f16 0%, #05080d 45%, #020406 100%);
+}
+
+#root {
+  min-height: 100vh;
+}

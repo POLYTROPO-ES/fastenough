@@ -1,0 +1,19 @@
+{
+  "name": "FastEnough Speedometer",
+  "short_name": "FastEnough",
+  "description": "Car-inspired speedometer app to estimate travel time saved or lost.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#05080d",
+  "theme_color": "#09121b",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

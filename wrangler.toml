@@ -1,0 +1,6 @@
+name = "fastenough"
+compatibility_date = "2026-03-22"
+pages_build_output_dir = "dist"
+
+[vars]
+APP_NAME = "fastenough"

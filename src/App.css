@@ -1,0 +1,406 @@
+.dashboard {
+  width: min(100%, 1100px);
+  margin: 0 auto;
+  padding: 0.9rem 0.7rem 1.5rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.topbar {
+  background: linear-gradient(145deg, rgba(5, 8, 12, 0.95), rgba(17, 27, 40, 0.88));
+  border: 1px solid rgba(196, 214, 229, 0.2);
+  border-radius: 14px;
+  padding: 0.55rem 0.9rem;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: clamp(1rem, 3.2vw, 1.3rem);
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.top-controls,
+.speed-panel,
+.result-card {
+  border: 1px solid rgba(198, 214, 227, 0.22);
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(6, 11, 17, 0.93), rgba(17, 26, 37, 0.9));
+}
+
+.top-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.62rem;
+}
+
+.top-controls label,
+.drive-controls label {
+  color: #deeeff;
+  font-weight: 600;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.86rem;
+}
+
+.top-controls select,
+.top-controls input,
+.drive-controls input {
+  width: 100%;
+  border: 1px solid rgba(180, 200, 218, 0.28);
+  border-radius: 9px;
+  background: rgba(9, 16, 24, 0.9);
+  color: #ebf6ff;
+  font: inherit;
+  padding: 0.48rem 0.56rem;
+}
+
+.top-controls input[type='range'],
+.drive-controls input[type='range'] {
+  accent-color: #ff7148;
+  padding: 0;
+  height: 24px;
+}
+
+.compact-slider {
+  align-content: start;
+}
+
+.inline-value {
+  font-size: 0.82rem;
+  color: #b7cadc;
+}
+
+.speed-panel {
+  padding: 0.66rem;
+  position: relative;
+}
+
+.speedo-stack {
+  position: relative;
+}
+
+.distance-vertical {
+  position: absolute;
+  left: 1.05rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 42px;
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  color: #d8ebff;
+  text-align: center;
+}
+
+.distance-vertical span {
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.distance-vertical strong {
+  font-size: 0.75rem;
+  color: #f0f8ff;
+  margin-top: 0.25rem;
+}
+
+.distance-vertical input[type='range'] {
+  width: 200px;
+  height: 20px;
+  transform: rotate(-90deg);
+  accent-color: #7ad5ff;
+  background: transparent;
+}
+
+.ring-legend {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 2;
+  background: rgba(7, 14, 22, 0.84);
+  border: 1px solid rgba(159, 183, 204, 0.34);
+  border-radius: 10px;
+  padding: 0.4rem 0.48rem;
+  min-width: 136px;
+}
+
+.ring-legend p {
+  margin: 0;
+  color: #dbeafb;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.ring-legend ul {
+  list-style: none;
+  margin: 0.32rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.24rem;
+}
+
+.ring-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: #c4d8ec;
+}
+
+.legend-swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  flex: 0 0 11px;
+}
+
+.legend-scale {
+  background: linear-gradient(145deg, #7ad5ff, #ffe06a, #ff6252);
+}
+
+.legend-limit {
+  background: linear-gradient(145deg, #ff9d56, #ff6252);
+}
+
+.legend-current {
+  background: linear-gradient(145deg, #43c8ff, #8bedff);
+}
+
+.speedometer {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  max-width: 780px;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.38));
+}
+
+.speedometer .needle {
+  stroke: #ff6f5a;
+  stroke-width: 4;
+  filter: drop-shadow(0 0 8px rgba(255, 97, 79, 0.8));
+}
+
+.speedometer .limit-indicator {
+  stroke: #ff2b2b;
+  stroke-width: 6;
+  filter: drop-shadow(0 0 10px rgba(255, 43, 43, 0.95));
+}
+
+.speedometer .limit-indicator-dot {
+  fill: #ff2b2b;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.speedometer .needle-center {
+  fill: #ff644c;
+  stroke: #f5fbff;
+  stroke-width: 3;
+}
+
+.ring-click-target {
+  cursor: pointer;
+}
+
+.ring-helper {
+  pointer-events: none;
+}
+
+.ring-marker {
+  pointer-events: none;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.limit-sign-outer,
+.limit-sign-inner {
+  pointer-events: none;
+}
+
+.limit-sign-outer {
+  fill: #ff2727;
+  stroke: #ffd8d8;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 7px rgba(255, 39, 39, 0.95));
+}
+
+.limit-sign-inner {
+  fill: #ffffff;
+  stroke: #ffe8e8;
+  stroke-width: 0.6;
+}
+
+.ring-marker.limit {
+  fill: #ff5848;
+  filter: drop-shadow(0 0 7px rgba(255, 88, 72, 0.95));
+}
+
+.ring-marker.current {
+  fill: #58d5ff;
+  filter: drop-shadow(0 0 7px rgba(88, 213, 255, 0.95));
+}
+
+.ring-cue {
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  pointer-events: none;
+}
+
+.ring-cue.limit {
+  fill: #ff9b8f;
+}
+
+.ring-cue.current {
+  fill: #9cdfff;
+}
+
+.speedometer .speed-value {
+  fill: #f3f9ff;
+  font-size: 50px;
+  font-weight: 700;
+}
+
+.speedometer .speed-unit {
+  fill: #b7cae0;
+  font-size: 18px;
+}
+
+.speedometer .speed-kmh {
+  fill: #9eb3c8;
+  font-size: 14px;
+}
+
+.overlay-speed-label {
+  fill: #e9f5ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.overlay-time {
+  fill: #c8d9e9;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.overlay-time.positive {
+  fill: #82f3af;
+}
+
+.overlay-time.negative {
+  fill: #ff9a95;
+}
+
+.drive-controls {
+  margin-top: 0.4rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.result-card {
+  padding: 0.6rem 0.75rem;
+}
+
+.label {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  color: #a7bbcf;
+  font-size: 0.64rem;
+}
+
+.delta {
+  margin: 0.18rem 0 0;
+  font-size: clamp(1rem, 4.6vw, 1.35rem);
+  font-weight: 700;
+}
+
+.delta.positive {
+  color: #8bffb5;
+}
+
+.delta.negative {
+  color: #ff9f99;
+}
+
+.delta-state {
+  margin: 0.1rem 0 0.2rem;
+  color: #d0deec;
+  font-size: 0.86rem;
+}
+
+.small-line {
+  margin: 0.08rem 0;
+  color: #9fb3c7;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 760px) {
+  .top-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr);
+  }
+
+  .top-controls label {
+    font-size: 0.79rem;
+  }
+
+  .top-controls select,
+  .top-controls input,
+  .drive-controls input {
+    padding: 0.42rem 0.48rem;
+  }
+
+  .overlay-speed-label {
+    font-size: 11px;
+  }
+
+  .overlay-time {
+    font-size: 10px;
+  }
+
+  .ring-legend {
+    top: 0.5rem;
+    right: 0.5rem;
+    min-width: 124px;
+    padding: 0.34rem 0.42rem;
+  }
+
+  .ring-legend li {
+    font-size: 0.67rem;
+  }
+
+  .distance-vertical {
+    left: 0.5rem;
+    width: 34px;
+  }
+
+  .distance-vertical span {
+    font-size: 0.58rem;
+  }
+
+  .distance-vertical input[type='range'] {
+    width: 150px;
+  }
+
+  .ring-cue {
+    font-size: 10px;
+  }
+}
+
+@media (min-width: 900px) {
+  .dashboard {
+    padding-top: 1.2rem;
+  }
+
+  .drive-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+}
