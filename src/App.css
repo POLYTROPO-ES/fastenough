@@ -14,7 +14,7 @@
   border-radius: 14px;
   padding: 0.45rem 0.7rem;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 0.45rem;
   position: relative;
@@ -111,6 +111,14 @@
   display: grid;
   gap: 0.25rem;
   font-size: 0.74rem;
+}
+
+.topbar-unit-toggle {
+  min-width: 168px;
+}
+
+.topbar-unit-toggle .unit-toggle-label {
+  font-size: 0.64rem;
 }
 
 .unit-toggle-label {
@@ -725,9 +733,31 @@
   }
 
   .topbar {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto auto;
     gap: 0.35rem;
     padding: 0.35rem 0.5rem;
+  }
+
+  .topbar-unit-toggle {
+    min-width: 136px;
+  }
+
+  .topbar-unit-toggle .unit-toggle-label {
+    display: none;
+  }
+
+  .topbar-unit-toggle .unit-toggle-buttons {
+    gap: 0.22rem;
+  }
+
+  .topbar-unit-toggle .unit-toggle-btn {
+    padding: 0.26rem 0.28rem;
+    font-size: 0.63rem;
+  }
+
+  .topbar-unit-toggle .unit-toggle-btn .unit-icon {
+    min-width: 1.4rem;
+    font-size: 0.56rem;
   }
 
   .menu-trigger {

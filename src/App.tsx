@@ -722,6 +722,31 @@ function App() {
     <main className="dashboard">
       <header className="topbar">
         <h1>Fast enough</h1>
+        <div className="unit-toggle topbar-unit-toggle" role="group" aria-label={t.unitLabel}>
+          <span className="unit-toggle-label">{t.unitLabel}</span>
+          <div className="unit-toggle-buttons" data-testid="unit-toggle">
+            <button
+              type="button"
+              className={`unit-toggle-btn ${distanceUnit === 'km' ? 'active' : ''}`}
+              onClick={() => handleUnitChange('km')}
+              aria-pressed={distanceUnit === 'km'}
+              aria-label="Kilometers per hour"
+            >
+              <span className="unit-icon" aria-hidden="true">KM</span>
+              <span>km/h</span>
+            </button>
+            <button
+              type="button"
+              className={`unit-toggle-btn ${distanceUnit === 'mi' ? 'active' : ''}`}
+              onClick={() => handleUnitChange('mi')}
+              aria-pressed={distanceUnit === 'mi'}
+              aria-label="Miles per hour"
+            >
+              <span className="unit-icon" aria-hidden="true">MI</span>
+              <span>mph</span>
+            </button>
+          </div>
+        </div>
         <button
           type="button"
           className="menu-trigger"
@@ -745,32 +770,6 @@ function App() {
                 ))}
               </select>
             </label>
-
-            <div className="unit-toggle" role="group" aria-label={t.unitLabel}>
-              <span className="unit-toggle-label">{t.unitLabel}</span>
-              <div className="unit-toggle-buttons" data-testid="unit-toggle">
-                <button
-                  type="button"
-                  className={`unit-toggle-btn ${distanceUnit === 'km' ? 'active' : ''}`}
-                  onClick={() => handleUnitChange('km')}
-                  aria-pressed={distanceUnit === 'km'}
-                  aria-label="Kilometers per hour"
-                >
-                  <span className="unit-icon" aria-hidden="true">KM</span>
-                  <span>km/h</span>
-                </button>
-                <button
-                  type="button"
-                  className={`unit-toggle-btn ${distanceUnit === 'mi' ? 'active' : ''}`}
-                  onClick={() => handleUnitChange('mi')}
-                  aria-pressed={distanceUnit === 'mi'}
-                  aria-label="Miles per hour"
-                >
-                  <span className="unit-icon" aria-hidden="true">MI</span>
-                  <span>mph</span>
-                </button>
-              </div>
-            </div>
           </div>
 
           <div className="topbar-actions">
