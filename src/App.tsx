@@ -636,16 +636,13 @@ function App() {
     setDistanceUnit('km');
   }
 
-  function handleRingSelection(
-    event: PointerEvent<SVGCircleElement>,
+  function applyPointerSelection(
+    clientX: number,
+    clientY: number,
     target: 'current' | 'limit',
+    rect: DOMRect,
   ) {
-    const svg = event.currentTarget.ownerSVGElement;
-    if (!svg) {
-      return;
-    }
-
-    const value = Math.round(speedFromPointer(event.clientX, event.clientY, svg.getBoundingClientRect(), maxSpeed));
+    const value = Math.round(speedFromPointer(clientX, clientY, rect, maxSpeed));
 
     if (target === 'current') {
       setSpeed(value);
@@ -666,6 +663,8 @@ function App() {
       }
     }
 
+    event.preventDefault();
+
     setDragTarget(target);
     if (typeof event.currentTarget.setPointerCapture === 'function') {
       try {
@@ -674,17 +673,40 @@ function App() {
         // Ignore capture errors on environments that do not fully support pointer capture.
       }
     }
-    handleRingSelection(event, target);
+
+    const svg = event.currentTarget.ownerSVGElement;
+    if (!svg) {
+      return;
+    }
+
+    applyPointerSelection(event.clientX, event.clientY, target, svg.getBoundingClientRect());
   }
 
   function continueRingDrag(
     event: PointerEvent<SVGCircleElement>,
     target: 'current' | 'limit',
   ) {
+    event.preventDefault();
+
     if (dragTarget !== target) {
       return;
     }
-    handleRingSelection(event, target);
+
+    const svg = event.currentTarget.ownerSVGElement;
+    if (!svg) {
+      return;
+    }
+
+    applyPointerSelection(event.clientX, event.clientY, target, svg.getBoundingClientRect());
+  }
+
+  function continueSvgDrag(event: PointerEvent<SVGSVGElement>) {
+    if (!dragTarget) {
+      return;
+    }
+
+    event.preventDefault();
+    applyPointerSelection(event.clientX, event.clientY, dragTarget, event.currentTarget.getBoundingClientRect());
   }
 
   function stopRingDrag(event: PointerEvent<SVGCircleElement>) {
@@ -695,6 +717,10 @@ function App() {
         // Ignore release errors for unsupported environments.
       }
     }
+    setDragTarget(null);
+  }
+
+  function stopSvgDrag() {
     setDragTarget(null);
   }
 
@@ -895,7 +921,16 @@ function App() {
         </aside>
 
         <div className="speedo-stack">
-          <svg className="speedometer" viewBox="0 0 600 600" role="img" aria-label={t.speedometerLabel}>
+          <svg
+            className="speedometer"
+            viewBox="0 0 600 600"
+            role="img"
+            aria-label={t.speedometerLabel}
+            onPointerMove={continueSvgDrag}
+            onPointerUp={stopSvgDrag}
+            onPointerCancel={stopSvgDrag}
+            onPointerLeave={stopSvgDrag}
+          >
           <defs>
             <linearGradient id="gaugeStroke" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#7ad5ff" />

@@ -404,6 +404,7 @@
   margin: 0 auto;
   max-width: min(780px, 100%);
   filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.38));
+  touch-action: none;
 }
 
 .speedometer .needle {
@@ -438,6 +439,7 @@
 
 .ring-click-target {
   cursor: pointer;
+  touch-action: none;
 }
 
 .ring-click-target.dragging {
