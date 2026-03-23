@@ -269,6 +269,12 @@
   filter: drop-shadow(0 0 8px rgba(255, 97, 79, 0.8));
 }
 
+.speedometer .needle-tail {
+  stroke: #ffd5cf;
+  stroke-width: 3;
+  opacity: 0.9;
+}
+
 .speedometer .limit-indicator {
   stroke: #ff2b2b;
   stroke-width: 6;

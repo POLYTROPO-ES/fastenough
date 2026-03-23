@@ -508,12 +508,12 @@ function App() {
 
   const needleTip = useMemo(() => {
     const angle = angleForSpeed(speed, maxSpeed);
-    return pointOnArc(300, 300, 220, angle);
-  }, [speed, maxSpeed]);
+    return pointOnArc(300, 300, ringArc[2].radius - 2, angle);
+  }, [speed, maxSpeed, ringArc]);
 
   const needleTailTip = useMemo(() => {
     const angle = angleForSpeed(speed, maxSpeed) + 180;
-    return pointOnArc(300, 300, 34, angle);
+    return pointOnArc(300, 300, 22, angle);
   }, [speed, maxSpeed]);
 
   const limitMarkOuter = useMemo(() => {
