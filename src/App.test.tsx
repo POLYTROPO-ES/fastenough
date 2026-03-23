@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 
 afterEach(() => {
+  window.history.replaceState({}, '', '/');
   cleanup();
   vi.restoreAllMocks();
 });
@@ -87,6 +88,42 @@ describe('App', () => {
     await waitFor(() => {
       const limitSlider = screen.getByTestId('speed-limit-slider') as HTMLInputElement;
       expect(Number(limitSlider.value)).toBeLessThan(15);
+    });
+  });
+
+  it('initializes values from URL settings parameters', () => {
+    window.history.replaceState({}, '', '/?d=250&s=132&l=120');
+    render(<App />);
+
+    const distanceSlider = screen.getByTestId('distance-slider') as HTMLInputElement;
+    const speedSlider = screen.getByTestId('speed-slider') as HTMLInputElement;
+    const limitSlider = screen.getByTestId('speed-limit-slider') as HTMLInputElement;
+
+    expect(distanceSlider.value).toBe('250');
+    expect(speedSlider.value).toBe('132');
+    expect(limitSlider.value).toBe('120');
+  });
+
+  it('creates share link with d s l parameters', async () => {
+    window.history.replaceState({}, '', '/');
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+
+    render(<App />);
+    const distanceSlider = screen.getByTestId('distance-slider') as HTMLInputElement;
+    const speedSlider = screen.getByTestId('speed-slider') as HTMLInputElement;
+    const limitSlider = screen.getByTestId('speed-limit-slider') as HTMLInputElement;
+
+    fireEvent.click(screen.getByTestId('share-settings-btn'));
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledTimes(1);
+      expect(writeText.mock.calls[0][0]).toContain(
+        `?d=${distanceSlider.value}&s=${speedSlider.value}&l=${limitSlider.value}`,
+      );
     });
   });
 });

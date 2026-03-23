@@ -37,6 +37,16 @@ type Translations = {
   currentTravelTime: string;
   baselineTravelTime: string;
   baselineNote: string;
+  shareSettings: string;
+  shareCopied: string;
+  shareReady: string;
+  shareError: string;
+};
+
+type InitialSettings = {
+  distance: number;
+  speed: number;
+  speedLimit: number;
 };
 
 const KM_TO_MI = 0.621371;
@@ -76,6 +86,10 @@ const translations: Record<Locale, Translations> = {
     currentTravelTime: 'Travel time',
     baselineTravelTime: 'Limit pace time',
     baselineNote: 'Overlay shows difference vs speed limit.',
+    shareSettings: 'Share setting',
+    shareCopied: 'Link copied',
+    shareReady: 'Link ready',
+    shareError: 'Could not copy',
   },
   es: {
     languageLabel: 'Idioma',
@@ -98,6 +112,10 @@ const translations: Record<Locale, Translations> = {
     currentTravelTime: 'Tiempo de viaje',
     baselineTravelTime: 'Tiempo al limite',
     baselineNote: 'La capa muestra diferencia contra el limite.',
+    shareSettings: 'Compartir ajuste',
+    shareCopied: 'Enlace copiado',
+    shareReady: 'Enlace listo',
+    shareError: 'No se pudo copiar',
   },
   fr: {
     languageLabel: 'Language',
@@ -120,6 +138,10 @@ const translations: Record<Locale, Translations> = {
     currentTravelTime: 'Travel time',
     baselineTravelTime: 'Limit pace time',
     baselineNote: 'Overlay shows difference vs speed limit.',
+    shareSettings: 'Share setting',
+    shareCopied: 'Link copied',
+    shareReady: 'Link ready',
+    shareError: 'Could not copy',
   },
   de: {
     languageLabel: 'Language',
@@ -142,6 +164,10 @@ const translations: Record<Locale, Translations> = {
     currentTravelTime: 'Travel time',
     baselineTravelTime: 'Limit pace time',
     baselineNote: 'Overlay shows difference vs speed limit.',
+    shareSettings: 'Share setting',
+    shareCopied: 'Link copied',
+    shareReady: 'Link ready',
+    shareError: 'Could not copy',
   },
   pt: {
     languageLabel: 'Language',
@@ -164,6 +190,10 @@ const translations: Record<Locale, Translations> = {
     currentTravelTime: 'Travel time',
     baselineTravelTime: 'Limit pace time',
     baselineNote: 'Overlay shows difference vs speed limit.',
+    shareSettings: 'Share setting',
+    shareCopied: 'Link copied',
+    shareReady: 'Link ready',
+    shareError: 'Could not copy',
   },
   it: {
     languageLabel: 'Language',
@@ -186,6 +216,10 @@ const translations: Record<Locale, Translations> = {
     currentTravelTime: 'Travel time',
     baselineTravelTime: 'Limit pace time',
     baselineNote: 'Overlay shows difference vs speed limit.',
+    shareSettings: 'Share setting',
+    shareCopied: 'Link copied',
+    shareReady: 'Link ready',
+    shareError: 'Could not copy',
   },
   ja: {
     languageLabel: 'Language',
@@ -208,6 +242,10 @@ const translations: Record<Locale, Translations> = {
     currentTravelTime: 'Travel time',
     baselineTravelTime: 'Limit pace time',
     baselineNote: 'Overlay shows difference vs speed limit.',
+    shareSettings: 'Share setting',
+    shareCopied: 'Link copied',
+    shareReady: 'Link ready',
+    shareError: 'Could not copy',
   },
   zh: {
     languageLabel: 'Language',
@@ -230,8 +268,35 @@ const translations: Record<Locale, Translations> = {
     currentTravelTime: 'Travel time',
     baselineTravelTime: 'Limit pace time',
     baselineNote: 'Overlay shows difference vs speed limit.',
+    shareSettings: 'Share setting',
+    shareCopied: 'Link copied',
+    shareReady: 'Link ready',
+    shareError: 'Could not copy',
   },
 };
+
+function readInitialSettings(): InitialSettings {
+  const defaults: InitialSettings = {
+    distance: 100,
+    speed: 132,
+    speedLimit: 120,
+  };
+
+  if (typeof window === 'undefined') {
+    return defaults;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const d = Number(params.get('d'));
+  const s = Number(params.get('s'));
+  const l = Number(params.get('l'));
+
+  return {
+    distance: Number.isFinite(d) ? clamp(Math.round(d), 10, 1000) : defaults.distance,
+    speed: Number.isFinite(s) ? clamp(Math.round(s), 0, 300) : defaults.speed,
+    speedLimit: Number.isFinite(l) ? clamp(Math.round(l), 0, 300) : defaults.speedLimit,
+  };
+}
 
 function roundTo(value: number, decimals = 1): number {
   const multiplier = 10 ** decimals;
@@ -369,11 +434,13 @@ function createDisplayMarks(unit: DistanceUnit, maxSpeedUnit: number): Array<{ s
 
 function App() {
   const [dragTarget, setDragTarget] = useState<'current' | 'limit' | null>(null);
+  const initialSettings = useMemo(() => readInitialSettings(), []);
   const [locale, setLocale] = useState<Locale>('en');
   const [distanceUnit, setDistanceUnit] = useState<DistanceUnit>('km');
-  const [distance, setDistance] = useState(100);
-  const [speed, setSpeed] = useState(100);
-  const [speedLimit, setSpeedLimit] = useState(100);
+  const [distance, setDistance] = useState(initialSettings.distance);
+  const [speed, setSpeed] = useState(initialSettings.speed);
+  const [speedLimit, setSpeedLimit] = useState(initialSettings.speedLimit);
+  const [shareStatus, setShareStatus] = useState('');
 
   const t = translations[locale];
   const maxSpeed = speedometerMax(distanceUnit);
@@ -393,7 +460,7 @@ function App() {
     const cx = 300;
     const cy = 300;
     const speedLabelRadius = 205;
-    const timeLabelRadius = 286;
+    const timeLabelRadius = 294;
 
     return displayMarks.map((mark) => {
       const angle = angleForSpeed(mark.speedUnit, maxSpeed);
@@ -552,30 +619,70 @@ function App() {
     setDragTarget(null);
   }
 
+  async function shareCurrentSettings() {
+    const url = new URL(window.location.href);
+    url.searchParams.set('d', String(distance));
+    url.searchParams.set('s', String(speed));
+    url.searchParams.set('l', String(speedLimit));
+
+    const shareUrl = `${url.origin}${url.pathname}?${url.searchParams.toString()}`;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        setShareStatus(`${t.shareCopied}: ${shareUrl}`);
+        return;
+      }
+      setShareStatus(`${t.shareReady}: ${shareUrl}`);
+    } catch {
+      setShareStatus(`${t.shareError}: ${shareUrl}`);
+    }
+  }
+
   return (
     <main className="dashboard">
       <header className="topbar">
         <h1>Fast enough</h1>
+        <div className="topbar-inline-controls">
+          <label>
+            {t.languageLabel}
+            <select value={locale} onChange={(event) => setLocale(event.target.value as Locale)}>
+              {languageOptions.map((option) => (
+                <option value={option.value} key={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            {t.unitLabel}
+            <select value={distanceUnit} onChange={(event) => handleUnitChange(event.target.value as DistanceUnit)}>
+              <option value="km">Kilometers (km/h)</option>
+              <option value="mi">Miles (mph)</option>
+            </select>
+          </label>
+        </div>
+
+        <button type="button" className="share-action" onClick={shareCurrentSettings} data-testid="share-settings-btn">
+          {t.shareSettings}
+        </button>
       </header>
 
       <section className="top-controls" aria-label="primary controls">
         <label>
-          {t.languageLabel}
-          <select value={locale} onChange={(event) => setLocale(event.target.value as Locale)}>
-            {languageOptions.map((option) => (
-              <option value={option.value} key={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          {t.unitLabel}
-          <select value={distanceUnit} onChange={(event) => handleUnitChange(event.target.value as DistanceUnit)}>
-            <option value="km">Kilometers (km/h)</option>
-            <option value="mi">Miles (mph)</option>
-          </select>
+          {t.speedLabel}
+          <div className="inline-value">
+            <strong>{speed} {unitSuffix(distanceUnit)}</strong>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={maxSpeed}
+            value={speed}
+            onChange={(event) => setSpeed(clamp(Number(event.target.value), 0, maxSpeed))}
+            data-testid="speed-slider"
+          />
         </label>
 
         <label className="compact-slider">
@@ -767,20 +874,9 @@ function App() {
           })}
 
           {overlays.map((entry) => (
-            <g key={entry.key}>
-              <text x={entry.speedX} y={entry.speedY} textAnchor="middle" className="overlay-speed-label">
-                {entry.speedUnit}
-              </text>
-              <text
-                x={entry.timeX}
-                y={entry.timeY}
-                textAnchor="middle"
-                className={`overlay-time ${entry.tone}`}
-                data-testid={entry.speedKmh === 100 ? 'overlay-100' : undefined}
-              >
-                {entry.label}
-              </text>
-            </g>
+            <text key={`speed-${entry.key}`} x={entry.speedX} y={entry.speedY} textAnchor="middle" className="overlay-speed-label">
+              {entry.speedUnit}
+            </text>
           ))}
 
           {speedLimitActive && (
@@ -808,38 +904,42 @@ function App() {
           <text x="300" y="329" textAnchor="middle" className="speed-kmh">
             {Math.round(speedKmh)} km/h
           </text>
+
+          {overlays.map((entry) => (
+            <text
+              key={`time-${entry.key}`}
+              x={entry.timeX}
+              y={entry.timeY}
+              textAnchor="middle"
+              className={`overlay-time ${entry.tone}`}
+              data-testid={entry.speedKmh === 100 ? 'overlay-100' : undefined}
+            >
+              {entry.label}
+            </text>
+          ))}
         </svg>
         </div>
 
         <div className="drive-controls">
-          <label>
-            {t.speedLabel}
-            <div className="inline-value">
-              <strong>{speed} {unitSuffix(distanceUnit)}</strong>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={maxSpeed}
-              value={speed}
-              onChange={(event) => setSpeed(clamp(Number(event.target.value), 0, maxSpeed))}
-              data-testid="speed-slider"
-            />
-          </label>
+          <div className="share-box">
+            {shareStatus ? (
+              <p className="share-status" data-testid="share-status">{shareStatus}</p>
+            ) : null}
+          </div>
         </div>
-      </section>
 
-      <section className="result-card" aria-live="polite">
-        <p className="label">{t.summaryLabel}</p>
-        <p className={`delta ${currentDiffHours < 0 ? 'positive' : ''} ${currentDiffHours > 0 ? 'negative' : ''}`} data-testid="time-saved-value">
-          {signedDuration(currentDiffHours)}
-        </p>
-        <p className="delta-state" data-testid="time-saved-state">{currentState}</p>
-        <p className="small-line">{t.currentTravelTime}: <strong>{formatDuration(currentTravelTimeHours)}</strong></p>
-        <p className="small-line">
-          {speedLimitActive ? t.baselineTravelTime : t.baselineNote}:{' '}
-          <strong>{speedLimitActive ? formatDuration(baselineTravelTimeHours) : t.baselineOff}</strong>
-        </p>
+        <section className="result-card summary-floating" aria-live="polite">
+          <p className="label">{t.summaryLabel}</p>
+          <p className={`delta ${currentDiffHours < 0 ? 'positive' : ''} ${currentDiffHours > 0 ? 'negative' : ''}`} data-testid="time-saved-value">
+            {signedDuration(currentDiffHours)}
+          </p>
+          <p className="delta-state" data-testid="time-saved-state">{currentState}</p>
+          <p className="small-line">{t.currentTravelTime}: <strong>{formatDuration(currentTravelTimeHours)}</strong></p>
+          <p className="small-line">
+            {speedLimitActive ? t.baselineTravelTime : t.baselineNote}:{' '}
+            <strong>{speedLimitActive ? formatDuration(baselineTravelTimeHours) : t.baselineOff}</strong>
+          </p>
+        </section>
       </section>
     </main>
   );
