@@ -21,12 +21,17 @@ test('speed slider updates speed control value', async ({ page }) => {
   let updated = false;
 
   for (let attempt = 0; attempt < 3 && !updated; attempt += 1) {
-    await speedSlider.evaluate((node) => {
-      const input = node as HTMLInputElement;
-      input.value = '150';
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+    try {
+      await speedSlider.evaluate((node) => {
+        const input = node as HTMLInputElement;
+        input.value = '150';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    } catch {
+      await page.waitForLoadState('domcontentloaded');
+      continue;
+    }
 
     try {
       await expect(speedSlider).toHaveValue('150', { timeout: 1500 });

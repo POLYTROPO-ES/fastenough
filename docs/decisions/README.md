@@ -1,3 +1,4 @@
 # Decision Records Index
 
 1. [01-vite-react-typescript-cloudflare-baseline](01-vite-react-typescript-cloudflare-baseline.md)
+2. [02-mobile-layout-and-cache-stability](02-mobile-layout-and-cache-stability.md)

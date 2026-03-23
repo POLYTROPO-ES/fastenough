@@ -54,6 +54,7 @@ const MI_TO_KM = 1.60934;
 const BASE_MARKS_KMH = [30, 50, 80, 100, 120, 132, 150, 160, 200, 250, 300];
 const PER_HOUR_REFERENCE_KMH = 120;
 const REPOSITORY_URL = 'https://github.com/POLYTROPO-ES/fastenough';
+const RING_HINT_DISMISSED_KEY = 'fastenough-ring-hint-dismissed';
 
 const languageOptions: Array<{ value: Locale; label: string }> = [
   { value: 'en', label: 'English' },
@@ -424,6 +425,14 @@ function pointOnArc(cx: number, cy: number, radius: number, angleDeg: number): {
   };
 }
 
+function tangentUnit(angleDeg: number): { x: number; y: number } {
+  const rad = (angleDeg * Math.PI) / 180;
+  return {
+    x: -Math.sin(rad),
+    y: -Math.cos(rad),
+  };
+}
+
 function createDisplayMarks(unit: DistanceUnit, maxSpeedUnit: number): Array<{ speedUnit: number; speedKmh: number }> {
   const seen = new Set<number>();
   const marks: Array<{ speedUnit: number; speedKmh: number }> = [];
@@ -445,6 +454,13 @@ function createDisplayMarks(unit: DistanceUnit, maxSpeedUnit: number): Array<{ s
 
 function App() {
   const [dragTarget, setDragTarget] = useState<'current' | 'limit' | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showRingHint, setShowRingHint] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.localStorage.getItem(RING_HINT_DISMISSED_KEY) !== '1';
+  });
   const initialSettings = useMemo(() => readInitialSettings(), []);
   const [locale, setLocale] = useState<Locale>('en');
   const [distanceUnit, setDistanceUnit] = useState<DistanceUnit>('km');
@@ -549,6 +565,42 @@ function App() {
     return pointOnArc(300, 300, ringArc[2].radius, angle);
   }, [speed, maxSpeed, ringArc]);
 
+  const limitHintRight = useMemo(() => {
+    const angle = angleForSpeed(speedLimit, maxSpeed);
+    const tangent = tangentUnit(angle);
+    return {
+      x: limitRingMarker.x + tangent.x * 18,
+      y: limitRingMarker.y + tangent.y * 18,
+    };
+  }, [speedLimit, maxSpeed, limitRingMarker]);
+
+  const limitHintLeft = useMemo(() => {
+    const angle = angleForSpeed(speedLimit, maxSpeed);
+    const tangent = tangentUnit(angle);
+    return {
+      x: limitRingMarker.x - tangent.x * 18,
+      y: limitRingMarker.y - tangent.y * 18,
+    };
+  }, [speedLimit, maxSpeed, limitRingMarker]);
+
+  const currentHintRight = useMemo(() => {
+    const angle = angleForSpeed(speed, maxSpeed);
+    const tangent = tangentUnit(angle);
+    return {
+      x: currentRingMarker.x + tangent.x * 18,
+      y: currentRingMarker.y + tangent.y * 18,
+    };
+  }, [speed, maxSpeed, currentRingMarker]);
+
+  const currentHintLeft = useMemo(() => {
+    const angle = angleForSpeed(speed, maxSpeed);
+    const tangent = tangentUnit(angle);
+    return {
+      x: currentRingMarker.x - tangent.x * 18,
+      y: currentRingMarker.y - tangent.y * 18,
+    };
+  }, [speed, maxSpeed, currentRingMarker]);
+
   const currentState =
     !speedLimitActive || Math.abs(currentDiffHours) < 0.0001
       ? t.noDifference
@@ -607,6 +659,13 @@ function App() {
     event: PointerEvent<SVGCircleElement>,
     target: 'current' | 'limit',
   ) {
+    if (showRingHint) {
+      setShowRingHint(false);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(RING_HINT_DISMISSED_KEY, '1');
+      }
+    }
+
     setDragTarget(target);
     if (typeof event.currentTarget.setPointerCapture === 'function') {
       try {
@@ -663,81 +722,112 @@ function App() {
     <main className="dashboard">
       <header className="topbar">
         <h1>Fast enough</h1>
-        <div className="topbar-inline-controls">
-          <label>
-            {t.languageLabel}
-            <select value={locale} onChange={(event) => setLocale(event.target.value as Locale)}>
-              {languageOptions.map((option) => (
-                <option value={option.value} key={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
+        <button
+          type="button"
+          className="menu-trigger"
+          aria-expanded={menuOpen}
+          aria-controls="topbar-menu"
+          aria-label="Toggle menu"
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? 'X' : '≡'}
+        </button>
 
-          <div className="unit-toggle" role="group" aria-label={t.unitLabel}>
-            <span className="unit-toggle-label">{t.unitLabel}</span>
-            <div className="unit-toggle-buttons" data-testid="unit-toggle">
-              <button
-                type="button"
-                className={`unit-toggle-btn ${distanceUnit === 'km' ? 'active' : ''}`}
-                onClick={() => handleUnitChange('km')}
-                aria-pressed={distanceUnit === 'km'}
-                aria-label="Kilometers per hour"
-              >
-                <span className="unit-icon" aria-hidden="true">KM</span>
-                <span>km/h</span>
-              </button>
-              <button
-                type="button"
-                className={`unit-toggle-btn ${distanceUnit === 'mi' ? 'active' : ''}`}
-                onClick={() => handleUnitChange('mi')}
-                aria-pressed={distanceUnit === 'mi'}
-                aria-label="Miles per hour"
-              >
-                <span className="unit-icon" aria-hidden="true">MI</span>
-                <span>mph</span>
-              </button>
+        <div className={`topbar-menu ${menuOpen ? 'open' : ''}`} id="topbar-menu">
+          <div className="topbar-inline-controls">
+            <label>
+              {t.languageLabel}
+              <select value={locale} onChange={(event) => setLocale(event.target.value as Locale)}>
+                {languageOptions.map((option) => (
+                  <option value={option.value} key={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="unit-toggle" role="group" aria-label={t.unitLabel}>
+              <span className="unit-toggle-label">{t.unitLabel}</span>
+              <div className="unit-toggle-buttons" data-testid="unit-toggle">
+                <button
+                  type="button"
+                  className={`unit-toggle-btn ${distanceUnit === 'km' ? 'active' : ''}`}
+                  onClick={() => handleUnitChange('km')}
+                  aria-pressed={distanceUnit === 'km'}
+                  aria-label="Kilometers per hour"
+                >
+                  <span className="unit-icon" aria-hidden="true">KM</span>
+                  <span>km/h</span>
+                </button>
+                <button
+                  type="button"
+                  className={`unit-toggle-btn ${distanceUnit === 'mi' ? 'active' : ''}`}
+                  onClick={() => handleUnitChange('mi')}
+                  aria-pressed={distanceUnit === 'mi'}
+                  aria-label="Miles per hour"
+                >
+                  <span className="unit-icon" aria-hidden="true">MI</span>
+                  <span>mph</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="topbar-actions">
-          <button type="button" className="share-action" onClick={shareCurrentSettings} data-testid="share-settings-btn">
-            {t.shareSettings}
-          </button>
+          <div className="topbar-actions">
+            <button type="button" className="share-action" onClick={shareCurrentSettings} data-testid="share-settings-btn">
+              {t.shareSettings}
+            </button>
 
-          <details className="help-popover">
-            <summary className="help-trigger" aria-label="Help">
-              ?
-            </summary>
-            <div className="help-panel">
-              <h2>How Fast enough Works</h2>
-              <p>
-                Fast enough compares travel time between your current speed and an optional speed limit over the
-                selected trip distance. It visualizes the impact both in the center summary and around the speedometer
-                overlay marks.
-              </p>
-              <ul>
-                <li>Current speed: blue ring and center needle.</li>
-                <li>Speed limit: orange ring and red limit sign marker.</li>
-                <li>Trip distance: vertical slider from 10 to 1000.</li>
-                <li>Overlay labels: time gained or lost versus the configured limit at each mark.</li>
-                <li>Quick summary: total trip difference plus gain/loss per hour at your current setting.</li>
-                <li>Share setting: copies a URL with d, s, and l query parameters for exact state restore.</li>
-              </ul>
-              <p>
-                Repository: <a href={REPOSITORY_URL} target="_blank" rel="noreferrer">{REPOSITORY_URL}</a>
-              </p>
-            </div>
-          </details>
+            <details className="help-popover">
+              <summary className="help-trigger" aria-label="Help">
+                ?
+              </summary>
+              <div className="help-panel">
+                <h2>How Fast enough Works</h2>
+                <p>
+                  Fast enough compares travel time between your current speed and an optional speed limit over the
+                  selected trip distance. It visualizes the impact both in the center summary and around the speedometer
+                  overlay marks.
+                </p>
+                <ul>
+                  <li>Current speed: blue ring and center needle.</li>
+                  <li>Speed limit: orange ring and red limit sign marker.</li>
+                  <li>Trip distance: vertical slider from 10 to 1000.</li>
+                  <li>Overlay labels: time gained or lost versus the configured limit at each mark.</li>
+                  <li>Quick summary: total trip difference plus gain/loss per hour at your current setting.</li>
+                  <li>Share setting: copies a URL with d, s, and l query parameters for exact state restore.</li>
+                </ul>
+                <p>
+                  Repository: <a href={REPOSITORY_URL} target="_blank" rel="noreferrer">{REPOSITORY_URL}</a>
+                </p>
+              </div>
+            </details>
+          </div>
+
+          <aside className="menu-legend" aria-label={t.ringLegendTitle}>
+            <p>{t.ringLegendTitle}</p>
+            <ul>
+              <li>
+                <span className="legend-swatch legend-scale" />
+                {t.ringLegendScale}
+              </li>
+              <li>
+                <span className="legend-swatch legend-limit" />
+                {t.ringLegendLimit}
+              </li>
+              <li>
+                <span className="legend-swatch legend-current" />
+                {t.ringLegendCurrent}
+              </li>
+            </ul>
+          </aside>
         </div>
       </header>
 
       <section className="top-controls" aria-label="primary controls">
-        <label>
-          {t.speedLabel}
-          <div className="inline-value">
+        <label className="control-row">
+          <span className="control-row-label">{t.speedLabel}</span>
+          <div className="inline-value compact">
             <strong>{speed} {unitSuffix(distanceUnit)}</strong>
           </div>
           <input
@@ -750,9 +840,9 @@ function App() {
           />
         </label>
 
-        <label className="compact-slider">
-          {t.speedLimitLabel}
-          <div className="inline-value">
+        <label className="control-row compact-slider">
+          <span className="control-row-label">{t.speedLimitLabel}</span>
+          <div className="inline-value compact">
             <strong>{speedLimit === 0 ? t.baselineOff : `${speedLimit} ${unitSuffix(distanceUnit)}`}</strong>
           </div>
           <input
@@ -762,6 +852,24 @@ function App() {
             value={speedLimit}
             onChange={(event) => setSpeedLimit(clamp(Number(event.target.value), 0, maxSpeed))}
             data-testid="speed-limit-slider"
+          />
+        </label>
+
+        <label className="control-row compact-slider" aria-label={t.distanceLabel}>
+          <span className="control-row-label">{t.distanceLabel}</span>
+          <div className="inline-value compact">
+            <strong>
+              {distance} {distanceSuffix(distanceUnit)}
+            </strong>
+          </div>
+          <input
+            type="range"
+            min={10}
+            max={1000}
+            step={10}
+            value={distance}
+            onChange={(event) => setDistance(clamp(Number(event.target.value), 10, 1000))}
+            data-testid="distance-slider"
           />
         </label>
       </section>
@@ -788,24 +896,6 @@ function App() {
         </aside>
 
         <div className="speedo-stack">
-          <label className="distance-vertical" aria-label={t.distanceLabel}>
-            <span>{t.distanceLabel}</span>
-            <div className="distance-vertical-track">
-              <input
-                type="range"
-                min={10}
-                max={1000}
-                step={10}
-                value={distance}
-                onChange={(event) => setDistance(clamp(Number(event.target.value), 10, 1000))}
-                data-testid="distance-slider"
-              />
-            </div>
-            <strong>
-              {distance} {distanceSuffix(distanceUnit)}
-            </strong>
-          </label>
-
           <svg className="speedometer" viewBox="0 0 600 600" role="img" aria-label={t.speedometerLabel}>
           <defs>
             <linearGradient id="gaugeStroke" x1="0" y1="0" x2="1" y2="1">
@@ -919,6 +1009,27 @@ function App() {
           <circle cx={limitRingMarker.x} cy={limitRingMarker.y} r="5.2" className="limit-sign-inner" />
           <circle cx={currentRingMarker.x} cy={currentRingMarker.y} r="7" className="ring-marker current" />
 
+          {showRingHint ? (
+            <>
+              <g className="ring-hint-group">
+                <text x={limitHintLeft.x} y={limitHintLeft.y} textAnchor="middle" className="ring-hint-arrow" aria-hidden="true">
+                  {'<'}
+                </text>
+                <text x={limitHintRight.x} y={limitHintRight.y} textAnchor="middle" className="ring-hint-arrow" aria-hidden="true">
+                  {'>'}
+                </text>
+              </g>
+              <g className="ring-hint-group">
+                <text x={currentHintLeft.x} y={currentHintLeft.y} textAnchor="middle" className="ring-hint-arrow" aria-hidden="true">
+                  {'<'}
+                </text>
+                <text x={currentHintRight.x} y={currentHintRight.y} textAnchor="middle" className="ring-hint-arrow" aria-hidden="true">
+                  {'>'}
+                </text>
+              </g>
+            </>
+          ) : null}
+
           {Array.from({ length: Math.floor(maxSpeed / 10) + 1 }, (_, index) => index * 10).map((value) => {
             const angle = angleForSpeed(value, maxSpeed);
             const major = value % 20 === 0;
@@ -960,12 +1071,12 @@ function App() {
           <line x1="300" y1="300" x2={needleTip.x} y2={needleTip.y} className="needle" />
           <circle cx="300" cy="300" r="13" className="needle-center" />
 
-          <text x="300" y="412" textAnchor="middle" className="speed-kmh">
+          <text x="300" y="194" textAnchor="middle" className="speed-kmh">
             {Math.round(speed)} {unitSuffix(distanceUnit)}
           </text>
           <text
             x="300"
-            y="434"
+            y="216"
             textAnchor="middle"
             className={`speed-per-hour ${fixedPerHourDiffHours < 0 ? 'positive' : ''} ${fixedPerHourDiffHours > 0 ? 'negative' : ''}`}
             data-testid="inner-per-hour"
