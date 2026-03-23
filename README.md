@@ -64,6 +64,7 @@ Small PWA to see the correlation between speed and time saved.
 - docs: product goals, deployment docs, decision records
 
 ## Deployment Notes
+- Production URL: https://fastenough.polytropo.es
 - Cloudflare project defaults to fastenough.
 - Security headers are configured in public/_headers.
 - SPA redirects are configured in public/_redirects.

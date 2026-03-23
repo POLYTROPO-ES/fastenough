@@ -278,7 +278,7 @@ const translations: Record<Locale, Translations> = {
 function readInitialSettings(): InitialSettings {
   const defaults: InitialSettings = {
     distance: 100,
-    speed: 132,
+    speed: 130,
     speedLimit: 120,
   };
 
@@ -287,14 +287,23 @@ function readInitialSettings(): InitialSettings {
   }
 
   const params = new URLSearchParams(window.location.search);
-  const d = Number(params.get('d'));
-  const s = Number(params.get('s'));
-  const l = Number(params.get('l'));
+  const parseParam = (key: string): number | null => {
+    const raw = params.get(key);
+    if (raw === null || raw.trim() === '') {
+      return null;
+    }
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const d = parseParam('d');
+  const s = parseParam('s');
+  const l = parseParam('l');
 
   return {
-    distance: Number.isFinite(d) ? clamp(Math.round(d), 10, 1000) : defaults.distance,
-    speed: Number.isFinite(s) ? clamp(Math.round(s), 0, 300) : defaults.speed,
-    speedLimit: Number.isFinite(l) ? clamp(Math.round(l), 0, 300) : defaults.speedLimit,
+    distance: d !== null ? clamp(Math.round(d), 10, 1000) : defaults.distance,
+    speed: s !== null ? clamp(Math.round(s), 0, 300) : defaults.speed,
+    speedLimit: l !== null ? clamp(Math.round(l), 0, 300) : defaults.speedLimit,
   };
 }
 

@@ -104,6 +104,19 @@ describe('App', () => {
     expect(limitSlider.value).toBe('120');
   });
 
+  it('uses fallback defaults when URL has no settings parameters', () => {
+    window.history.replaceState({}, '', '/');
+    render(<App />);
+
+    const distanceSlider = screen.getByTestId('distance-slider') as HTMLInputElement;
+    const speedSlider = screen.getByTestId('speed-slider') as HTMLInputElement;
+    const limitSlider = screen.getByTestId('speed-limit-slider') as HTMLInputElement;
+
+    expect(distanceSlider.value).toBe('100');
+    expect(speedSlider.value).toBe('130');
+    expect(limitSlider.value).toBe('120');
+  });
+
   it('creates share link with d s l parameters', async () => {
     window.history.replaceState({}, '', '/');
     const writeText = vi.fn().mockResolvedValue(undefined);
